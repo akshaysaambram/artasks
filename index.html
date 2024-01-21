@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Tasks List</title>
+
+    <!-- Include Tailwind CSS -->
+    <link
+      href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css"
+      rel="stylesheet"
+    />
+  </head>
+  <body class="bg-gray-100 h-screen flex items-center justify-center p-4">
+    <div class="mx-auto bg-white p-6 rounded-md shadow-md" style="width: 80%">
+      <h1 class="text-2xl font-bold mb-6">Tasks List</h1>
+
+      <div class="mb-4">
+        <label for="newTodo" class="block text-sm font-medium text-gray-600"
+          >New Task:</label
+        >
+        <div class="flex flex-row my-4 gap-x-4">
+          <input
+            type="text"
+            id="newTodo"
+            placeholder="Enter a new Task"
+            class="py-2 pl-3 border rounded-md w-full"
+          />
+          <button
+            onclick="addTodo()"
+            class="px-4 py-2 bg-blue-500 text-white rounded-md"
+          >
+            Add
+          </button>
+        </div>
+      </div>
+
+      <ul id="todoList" class="space-y-2">
+        <!-- TODO items will be added here dynamically -->
+      </ul>
+    </div>
+
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        fetchData();
+      });
+
+      function fetchData() {
+        const apiUrl = "http://localhost:8080/api/tasks";
+
+        fetch(apiUrl)
+          .then((response) => response.json())
+          .then((data) => {
+            displayData(data);
+          })
+          .catch((error) => console.error("Error fetching data:", error));
+      }
+
+      function displayData(data) {
+        const todoListElement = document.getElementById("todoList");
+
+        todoListElement.innerHTML = "";
+
+        data.forEach((todo) => {
+          const listItem = document.createElement("li");
+          listItem.classList.add(
+            "flex",
+            "items-center",
+            "justify-between",
+            "border-b",
+            "py-2"
+          );
+
+          const taskContainer = document.createElement("div");
+          taskContainer.classList.add("flex", "items-center", "flex-grow");
+
+          const checkbox = document.createElement("input");
+          checkbox.type = "checkbox";
+          checkbox.checked = todo.completed;
+          checkbox.classList.add("mr-4");
+          checkbox.style.transform = "scale(1.5)";
+          checkbox.addEventListener("change", function () {
+            updateCompletionStatus(todo.id, this.checked);
+          });
+          taskContainer.appendChild(checkbox);
+
+          const taskText = document.createElement("span");
+          taskText.textContent = todo.title;
+          taskText.classList.add("mr-4");
+          if (todo.completed) {
+            taskText.classList.add("line-through", "text-gray-500");
+          }
+          taskContainer.appendChild(taskText);
+          listItem.appendChild(taskContainer);
+
+          const buttonContainer = document.createElement("div");
+          buttonContainer.classList.add("flex", "items-center");
+
+          const updateButton = createButton(
+            "Update Title",
+            "bg-blue-500",
+            "text-white",
+            "rounded-md",
+            "ml-2"
+          );
+          updateButton.onclick = function () {
+            updateTitle(todo.id);
+          };
+          buttonContainer.appendChild(updateButton);
+
+          const deleteButton = createButton(
+            "Delete",
+            "bg-red-500",
+            "text-white",
+            "rounded-md",
+            "ml-2"
+          );
+          deleteButton.onclick = function () {
+            deleteTodo(todo.id);
+          };
+          buttonContainer.appendChild(deleteButton);
+
+          listItem.appendChild(buttonContainer);
+          todoListElement.appendChild(listItem);
+        });
+      }
+
+      function createButton(text, bgClass, textClass, ...additionalClasses) {
+        const button = document.createElement("button");
+        button.textContent = text;
+        button.classList.add(
+          "px-4",
+          "py-2",
+          bgClass,
+          textClass,
+          ...additionalClasses
+        );
+        return button;
+      }
+
+      function addTodo() {
+        const newTodoInput = document.getElementById("newTodo");
+        const newTodoTitle = newTodoInput.value.trim();
+
+        if (newTodoTitle === "") {
+          alert("Please enter a valid TODO");
+          return;
+        }
+
+        const apiUrl = "http://localhost:8080/api/tasks";
+
+        fetch(apiUrl, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            title: newTodoTitle,
+            completed: false,
+          }),
+        })
+          .then((response) => response.json())
+          .then((data) => {
+            fetchData(); // Refresh the list after adding a new TODO
+          })
+          .catch((error) => console.error("Error adding TODO:", error));
+
+        // Clear the input field after adding the TODO
+        newTodoInput.value = "";
+      }
+
+      function updateTitle(todoId) {
+        const newTitle = prompt("Enter the new title for the TODO:");
+
+        if (newTitle === null || newTitle.trim() === "") {
+          alert("Please enter a valid title");
+          return;
+        }
+
+        const apiUrl = `http://localhost:8080/api/tasks/${todoId}`;
+
+        fetch(apiUrl, {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            title: newTitle,
+          }),
+        })
+          .then((response) => response.json())
+          .then((data) => {
+            fetchData(); // Refresh the list after updating the title
+          })
+          .catch((error) => console.error("Error updating title:", error));
+      }
+
+      function deleteTodo(todoId) {
+        const apiUrl = `http://localhost:8080/api/tasks/${todoId}`;
+
+        fetch(apiUrl, {
+          method: "DELETE",
+        })
+          .then((response) => {
+            if (response.ok) {
+              fetchData(); // Refresh the list after deleting the TODO
+            } else {
+              console.error("Error deleting TODO:", response.statusText);
+            }
+          })
+          .catch((error) => console.error("Error deleting TODO:", error));
+      }
+
+      function updateCompletionStatus(todoId, completed) {
+        const apiUrl = `http://localhost:8080/api/tasks/${todoId}`;
+
+        fetch(apiUrl, {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            completed: completed,
+          }),
+        })
+          .then((response) => response.json())
+          .then((data) => {
+            fetchData(); // Refresh the list after updating completion status
+          })
+          .catch((error) =>
+            console.error("Error updating completion status:", error)
+          );
+      }
+    </script>
+  </body>
+</html>
