@@ -1,56 +1,45 @@
 package com.artasks.artasks.models;
 
+import java.time.LocalDateTime;
+
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
+
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
 
 @Entity
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@ToString
+@Table(name = "tasks")
 public class Task {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @Column(length = 255, nullable = false, unique = true)
     private String title;
+
+    @Column(name = "isCompleted", nullable = false)
     private boolean completed;
 
-    public Task(long id, String title, boolean completed) {
-        this.id = id;
-        this.title = title;
-        this.completed = completed;
-    }
+    @CreationTimestamp
+    private LocalDateTime createdAt;
 
-    public Task() {
-
-    }
-
-    public long getId() {
-        return id;
-    }
-
-    public void setId(long id) {
-        this.id = id;
-    }
-
-    public String getTitle() {
-        return title;
-    }
-
-    public void setTitle(String title) {
-        this.title = title;
-    }
-
-    public boolean isCompleted() {
-        return completed;
-    }
-
-    public void setCompleted(boolean completed) {
-        this.completed = completed;
-    }
-
-    @Override
-    public String toString() {
-        return "Task [id=" + id + ", title=" + title + ", completed=" + completed + "]";
-    }
+    @UpdateTimestamp
+    private LocalDateTime updatedAt;
 
 }

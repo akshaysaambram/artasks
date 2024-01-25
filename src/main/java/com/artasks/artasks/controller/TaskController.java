@@ -11,11 +11,11 @@ import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -39,9 +39,9 @@ public class TaskController {
         return taskService.createTask(task);
     }
 
-    @GetMapping("/tasks/{id}")
+    @GetMapping("/tasks/task")
     @ResponseBody
-    public Optional<Task> getTaskById(@PathVariable Long id) {
+    public Optional<Task> getTaskById(@RequestParam Long id) {
         return taskService.getTaskById(id);
     }
 
@@ -51,9 +51,9 @@ public class TaskController {
         return taskService.createTask(task);
     }
 
-    @PatchMapping("/tasks/{id}")
+    @PatchMapping("/tasks/task")
     @ResponseBody
-    public Task patchTask(@PathVariable Long id, @RequestBody Map<String, Object> updates) {
+    public Task patchTask(@RequestParam Long id, @RequestBody Map<String, Object> updates) {
         Task task = taskService.getTaskById(id).orElse(null);
 
         if (task != null) {
@@ -70,9 +70,9 @@ public class TaskController {
         return null;
     }
 
-    @DeleteMapping("/tasks/{id}")
+    @DeleteMapping("/tasks/task")
     @ResponseBody
-    public Boolean deleteTaskById(@PathVariable Long id) {
+    public Boolean deleteTaskById(@RequestParam Long id) {
         return taskService.deleteTaskById(id);
     }
 
